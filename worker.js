@@ -137,8 +137,22 @@ async function checkin() {
 			const checkinResult = JSON.parse(responseText);
 			console.log('Checkin Result:', checkinResult);
 			
+			// 3. 提取和解析 New API 结果
 			let msgStr = checkinResult.message || '';
-			let dataStr = checkinResult.data ? `\n详情: ${typeof checkinResult.data === 'object' ? JSON.stringify(checkinResult.data) : checkinResult.data}` : '';
+			let dataStr = '';
+			
+			// 把生硬的 JSON 转换成人类友好的格式
+			if (checkinResult.data) {
+				if (typeof checkinResult.data === 'object') {
+					let date = checkinResult.data.checkin_date || '未知';
+					let quota = checkinResult.data.quota_awarded || 0;
+					// NewAPI 默认换算比例是 500000 = $1，帮你算好显示出来
+					let quotaDollar = (quota / 500000).toFixed(3); 
+					dataStr = `\n📅 日期: ${date}\n💰 额度: ${quota} (约 $${quotaDollar})`;
+				} else {
+					dataStr = `\n详情: ${checkinResult.data}`;
+				}
+			}
 
 			if (checkinResult.success) {
 				签到结果 = `🎉 签到成功 🎉\n提示: ${msgStr || '操作成功'}${dataStr}`;
